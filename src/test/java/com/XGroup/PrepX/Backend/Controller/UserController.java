@@ -7,6 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 @CrossOrigin("http://localhost:5173/")
 @RestController
@@ -16,7 +20,7 @@ public class UserController {
     private UserServices userServices;
 
     @PostMapping("/signup")
-    public  ResponseEntity<String> CreateNewUser(@RequestBody UserModel newUser ){
+    public ResponseEntity<String> CreateNewUser(@RequestBody UserModel newUser) {
         try {
             boolean check = userServices.CreateNewUser(newUser);
             return ResponseEntity.status(HttpStatus.CREATED).body("User Created Successfully");
@@ -25,14 +29,29 @@ public class UserController {
         }
     }
 
-    @PostMapping("/login")
-    public  ResponseEntity<String> LoginUser(@RequestBody UserModel newUser ){
-            boolean check = userServices.CheckUser(newUser);
-            if(check){
-                return ResponseEntity.status(HttpStatus.OK).body("User Found");
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not Found");
-            }
+    @GetMapping("/")
+    public List<UserModel> CreateNewUser() {
+        return userServices.getalluser();
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody UserModel newUser) {
+        try {
+            String token = userServices.checkUser(newUser);
+
+            if (token != null) {
+                // Return the JWT token in the response
+                Map<String, Object> response = new HashMap<>();
+                response.put("token", token);
+                response.put("username", newUser.getUsername());
+
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication error: " + e.getMessage());
+        }
+    }
+
 }
-//dsadasdsa
