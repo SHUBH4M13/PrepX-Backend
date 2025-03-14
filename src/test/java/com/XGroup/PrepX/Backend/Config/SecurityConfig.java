@@ -16,9 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
-@CrossOrigin("http://localhost:5173/")
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -34,8 +32,7 @@ public class SecurityConfig {
         return http
                 .csrf(Customizer -> Customizer.disable())
                 .authorizeHttpRequests( request -> request
-                        .requestMatchers("/" , "/login" , "/signup").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/**").permitAll()
                 )
                 .addFilterBefore(jwtFilter , UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(Customizer.withDefaults())
@@ -54,7 +51,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-       return config.getAuthenticationManager();
+        return config.getAuthenticationManager();
     }
 
 
