@@ -29,10 +29,6 @@ public class UserController {
         }
     }
 
-    @GetMapping("/")
-    public List<UserModel> CreateNewUser() {
-        return userServices.getalluser();
-    }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserModel newUser) {
