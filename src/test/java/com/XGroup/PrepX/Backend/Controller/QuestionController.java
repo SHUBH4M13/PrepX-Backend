@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "https://prep-x-blush.vercel.app/")
+@CrossOrigin(origins = "https://prep-x-blush.vercel.app")
 public class QuestionController {
 
     private final QuestionRepository questionRepository;
