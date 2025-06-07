@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 
-@CrossOrigin("http://localhost:5173/")
+@CrossOrigin("https://prep-x-blush.vercel.app/")
 @RestController
 public class UserController {
 
