@@ -8,19 +8,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import java.util.function.Function;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @Service
 public class JWTService {
 
-    @Value("$(jwt_key)")
+    @Value("${jwt_key}")  // Fixed: Use curly braces instead of parentheses
     private String SECRET_KEY;
 
     public String generateToken(String username) {
@@ -37,7 +34,8 @@ public class JWTService {
     }
 
     private SecretKey getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(Base64.getEncoder().encodeToString(SECRET_KEY.getBytes()));
+        // Simplified key generation - your SECRET_KEY should already be base64 encoded
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
