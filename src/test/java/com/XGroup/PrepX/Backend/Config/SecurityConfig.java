@@ -1,6 +1,5 @@
 package com.XGroup.PrepX.Backend.Config;
 
-import com.XGroup.PrepX.Backend.Config.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,6 +42,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 );
 
+        // ✅ Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
