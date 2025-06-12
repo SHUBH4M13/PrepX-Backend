@@ -18,6 +18,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -43,10 +45,23 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("*"); // Allow all origins temporarily
-        configuration.addAllowedMethod("*"); // Allow all methods
-        configuration.addAllowedHeader("*"); // Allow all headers
-        configuration.setAllowCredentials(true);
+
+        // Option 1: If you need credentials, specify exact origins
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",           // Local development
+                "http://localhost:3001",           // Alternative local port
+                "https://prep-x-blush.vercel.app", // Your actual production frontend URL
+                "https://prepx-backend-production.up.railway.app" // Backend URL (if needed for self-requests)
+        ));
+
+        // Option 2: If you don't need credentials, comment above and uncomment below
+        // configuration.addAllowedOriginPattern("*");
+        // configuration.setAllowCredentials(false);
+
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true); // Set to false if using Option 2
+        configuration.setMaxAge(3600L); // Cache preflight response for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
