@@ -28,6 +28,10 @@ public class UserController {
         }
     }
 
+    @RequestMapping(value = "/login", method = RequestMethod.OPTIONS)
+    public ResponseEntity<?> handleOptions() {
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserModel newUser) {
