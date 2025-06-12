@@ -37,9 +37,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all OPTIONS requests
-                        .requestMatchers("/login", "/signup").permitAll() // Public endpoints
-                        .anyRequest().authenticated() // Secure other endpoints
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight CORS
+                        .requestMatchers("/login", "/signup").permitAll()       // Public endpoints
+                        .anyRequest().authenticated()                           // Secure everything else
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -51,21 +51,17 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Option 1: If you need credentials, specify exact origins
+        // Allow frontend origins
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",           // Local development
-                "http://localhost:3001",           // Alternative local port
-                "https://prep-x-blush.vercel.app", // Your actual production frontend URL
-                "https://prepx-backend-production.up.railway.app" // Backend URL (if needed for self-requests)
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "https://prep-x-blush.vercel.app"
         ));
 
-        // Option 2: If you don't need credentials, comment above and uncomment below
-        // configuration.addAllowedOriginPattern("*");
-        // configuration.setAllowCredentials(false);
-
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true); // Set to false if using Option 2
+        configuration.setAllowedHeaders(Arrays.asList("*")); // Accept any header from frontend
+        configuration.setExposedHeaders(Arrays.asList("Authorization")); // Allow frontend to read JWT from header
+        configuration.setAllowCredentials(true); // Enable cookies/token headers if needed
         configuration.setMaxAge(3600L); // Cache preflight response for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

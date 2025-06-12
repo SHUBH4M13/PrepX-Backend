@@ -12,7 +12,7 @@ import java.util.Map;
 
 
 @RestController
-@CrossOrigin(origins = "https://prep-x-blush.vercel.app", allowCredentials = "true")
+@CrossOrigin
 public class UserController {
 
     @Autowired
