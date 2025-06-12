@@ -7,64 +7,71 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import java.util.function.Function;
+
 import javax.crypto.SecretKey;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 @Service
 public class JWTService {
 
-    @Value("${jwt_key}")  // Fixed: Use curly braces instead of parentheses
+    @Value("${jwt_key}")
     private String SECRET_KEY;
 
+    // Generate token with subject = username
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
+
         return Jwts.builder()
-                .claims()
-                .add(claims)
-                .subject(username)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 168)) // 1 week
-                .and()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 168)) // 1 week
                 .signWith(getKey())
                 .compact();
     }
 
+    // Get signing key
     private SecretKey getKey() {
-        // Simplified key generation - your SECRET_KEY should already be base64 encoded
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    // Extract username (subject)
     public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    // Generic claim extractor
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
         final Claims claims = extractAllClaims(token);
         return claimResolver.apply(claims);
     }
 
+    // Extract all claims from token
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getKey())
+        return Jwts
+                .parser()
+                .setSigningKey(getKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
     }
 
+    // Validate token with username and expiry
     public boolean validateToken(String token, UserDetails userDetails) {
         final String userName = extractUserName(token);
         return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
+    // Token expiry check
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
+    // Extract expiration
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
