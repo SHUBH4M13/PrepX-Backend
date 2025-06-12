@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
 @Component
@@ -28,43 +29,49 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-        // Skip JWT processing for OPTIONS requests (preflight requests)
+        // ✅ 1. Allow CORS preflight requests to pass through
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            response.setStatus(HttpServletResponse.SC_OK);
             filterChain.doFilter(request, response);
             return;
         }
 
+        // ✅ 2. Check for JWT token in Authorization header
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) { // Added space after "Bearer"
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             try {
                 username = jwtService.extractUserName(token);
             } catch (Exception e) {
-                // Log the exception if needed, but continue with the filter chain
-                System.out.println("JWT token extraction failed: " + e.getMessage());
+                System.out.println("[JWT] Token extraction failed: " + e.getMessage());
             }
         }
 
+        // ✅ 3. Authenticate user if token is valid and user not yet authenticated
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 UserDetails userDetails = myUserDetailsService.loadUserByUsername(username);
+
                 if (jwtService.validateToken(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities()
+                    );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (Exception e) {
-                // Log the exception if needed
-                System.out.println("JWT authentication failed: " + e.getMessage());
+                System.out.println("[JWT] Authentication failed: " + e.getMessage());
             }
         }
 
+        // ✅ 4. Continue the filter chain
         filterChain.doFilter(request, response);
     }
 }
