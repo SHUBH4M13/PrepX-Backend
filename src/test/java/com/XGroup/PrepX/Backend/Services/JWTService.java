@@ -28,20 +28,28 @@ public class JWTService {
                 .setClaims(claims)
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 168)) // 1 week
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours
                 .signWith(getKey())
                 .compact();
     }
 
     // Get signing key
     private SecretKey getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
+        try {
+            byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating signing key: " + e.getMessage());
+        }
     }
 
     // Extract username (subject)
     public String extractUserName(String token) {
-        return extractClaim(token, Claims::getSubject);
+        try {
+            return extractClaim(token, Claims::getSubject);
+        } catch (Exception e) {
+            throw new RuntimeException("Error extracting username from token: " + e.getMessage());
+        }
     }
 
     // Generic claim extractor
@@ -52,12 +60,16 @@ public class JWTService {
 
     // Extract all claims from token
     private Claims extractAllClaims(String token) {
-        return Jwts
-                .parser()
-                .setSigningKey(getKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts
+                    .parser()
+                    .setSigningKey(getKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            throw new RuntimeException("Error extracting claims from token: " + e.getMessage());
+        }
     }
 
     // Validate token with username and expiry

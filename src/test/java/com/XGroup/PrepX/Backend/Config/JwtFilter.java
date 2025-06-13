@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.io.IOException;
 
@@ -50,7 +51,9 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 username = jwtService.extractUserName(token);
             } catch (Exception e) {
-                System.out.println("[JWT] Token extraction failed: " + e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Invalid token: " + e.getMessage());
+                return;
             }
         }
 
@@ -65,9 +68,19 @@ public class JwtFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Token validation failed");
+                    return;
                 }
+            } catch (UsernameNotFoundException e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("User not found");
+                return;
             } catch (Exception e) {
-                System.out.println("[JWT] Authentication failed: " + e.getMessage());
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("Authentication error: " + e.getMessage());
+                return;
             }
         }
 
