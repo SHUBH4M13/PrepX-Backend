@@ -30,7 +30,12 @@ public class UserController {
 
     @RequestMapping(value = "/login", method = RequestMethod.OPTIONS)
     public ResponseEntity<?> handleOptions() {
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+                .header("Access-Control-Allow-Origin", "https://prep-x-blush.vercel.app")
+                .header("Access-Control-Allow-Methods", "POST, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .build();
     }
 
     @PostMapping("/login")
@@ -44,12 +49,21 @@ public class UserController {
                 response.put("token", token);
                 response.put("username", newUser.getUsername());
 
-                return ResponseEntity.ok(response);
+                return ResponseEntity.ok()
+                        .header("Access-Control-Allow-Origin", "https://prep-x-blush.vercel.app")
+                        .header("Access-Control-Allow-Credentials", "true")
+                        .body(response);
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .header("Access-Control-Allow-Origin", "https://prep-x-blush.vercel.app")
+                        .header("Access-Control-Allow-Credentials", "true")
+                        .body("Invalid credentials");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header("Access-Control-Allow-Origin", "https://prep-x-blush.vercel.app")
+                    .header("Access-Control-Allow-Credentials", "true")
+                    .body("Authentication error: " + e.getMessage());
         }
     }
 
