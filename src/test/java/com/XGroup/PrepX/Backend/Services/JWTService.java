@@ -1,5 +1,6 @@
 package com.XGroup.PrepX.Backend.Services;
 
+import com.XGroup.PrepX.Backend.Config.JwtKeyGenerator;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,8 +19,14 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
-    @Value("${jwt_key}")
     private String SECRET_KEY;
+
+    @PostConstruct
+    public void init() {
+        // Generate a new key on service initialization
+        SECRET_KEY = JwtKeyGenerator.generateSecureKey();
+        System.out.println("Generated new JWT key for this session");
+    }
 
     // Generate token with subject = username
     public String generateToken(String username) {
